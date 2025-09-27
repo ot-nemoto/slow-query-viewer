@@ -14,7 +14,7 @@ export interface SlowQueryEntry {
 export class SlowQueryParser {
   static parseLog(content: string): SlowQueryEntry[] {
     const entries: SlowQueryEntry[] = [];
-    const lines = content.split('\n');
+    const lines = content.split("\n");
 
     let currentEntry: Partial<SlowQueryEntry> = {};
     let queryLines: string[] = [];
@@ -23,15 +23,20 @@ export class SlowQueryParser {
       const line = lines[i].trim();
 
       // Skip empty lines and header lines
-      if (!line || line.startsWith('Tcp port:') || line.startsWith('/rdsdbbin') || line === 'Time                 Id Command    Argument') {
+      if (
+        !line ||
+        line.startsWith("Tcp port:") ||
+        line.startsWith("/rdsdbbin") ||
+        line === "Time                 Id Command    Argument"
+      ) {
         continue;
       }
 
       // Parse timestamp
-      if (line.startsWith('# Time:')) {
+      if (line.startsWith("# Time:")) {
         // If we have a previous entry, save it
         if (currentEntry.time && queryLines.length > 0) {
-          currentEntry.query = queryLines.join(' ').trim();
+          currentEntry.query = queryLines.join(" ").trim();
           entries.push(currentEntry as SlowQueryEntry);
         }
 
@@ -46,8 +51,10 @@ export class SlowQueryParser {
       }
 
       // Parse user and host
-      else if (line.startsWith('# User@Host:')) {
-        const userHostMatch = line.match(/# User@Host: (.+?)\[(.+?)\] @ \[(.+?)\]\s+Id: (\d+)/);
+      else if (line.startsWith("# User@Host:")) {
+        const userHostMatch = line.match(
+          /# User@Host: (.+?)\[(.+?)\] @ \[(.+?)\]\s+Id: (\d+)/,
+        );
         if (userHostMatch) {
           currentEntry.user = userHostMatch[2];
           currentEntry.host = userHostMatch[3];
@@ -56,8 +63,10 @@ export class SlowQueryParser {
       }
 
       // Parse query metrics
-      else if (line.startsWith('# Query_time:')) {
-        const metricsMatch = line.match(/# Query_time: ([\d.]+)\s+Lock_time: ([\d.]+)\s+Rows_sent: (\d+)\s+Rows_examined: (\d+)/);
+      else if (line.startsWith("# Query_time:")) {
+        const metricsMatch = line.match(
+          /# Query_time: ([\d.]+)\s+Lock_time: ([\d.]+)\s+Rows_sent: (\d+)\s+Rows_examined: (\d+)/,
+        );
         if (metricsMatch) {
           currentEntry.queryTime = parseFloat(metricsMatch[1]);
           currentEntry.lockTime = parseFloat(metricsMatch[2]);
@@ -67,7 +76,7 @@ export class SlowQueryParser {
       }
 
       // Parse database
-      else if (line.startsWith('use ') && line.endsWith(';')) {
+      else if (line.startsWith("use ") && line.endsWith(";")) {
         const dbMatch = line.match(/use (.+?);/);
         if (dbMatch) {
           currentEntry.database = dbMatch[1];
@@ -75,19 +84,18 @@ export class SlowQueryParser {
       }
 
       // Parse SET timestamp (skip)
-      else if (line.startsWith('SET timestamp=')) {
-        continue;
+      else if (line.startsWith("SET timestamp=")) {
       }
 
       // Everything else is part of the query
-      else if (line && !line.startsWith('#')) {
+      else if (line && !line.startsWith("#")) {
         queryLines.push(line);
       }
     }
 
     // Don't forget the last entry
     if (currentEntry.time && queryLines.length > 0) {
-      currentEntry.query = queryLines.join(' ').trim();
+      currentEntry.query = queryLines.join(" ").trim();
       entries.push(currentEntry as SlowQueryEntry);
     }
 
@@ -97,20 +105,22 @@ export class SlowQueryParser {
   static normalizeQuery(query: string): string {
     // Remove extra whitespace and normalize query for grouping
     return query
-      .replace(/\s+/g, ' ')
+      .replace(/\s+/g, " ")
       .replace(/'/g, "'")
       .replace(/"/g, '"')
-      .replace(/\d+/g, '?') // Replace numbers with placeholders
+      .replace(/\d+/g, "?") // Replace numbers with placeholders
       .replace(/'[^']*'/g, "'?'") // Replace string literals
       .replace(/"[^"]*"/g, '"?"') // Replace quoted strings
       .trim();
   }
 
-  static groupByQuery(entries: SlowQueryEntry[]): Record<string, SlowQueryEntry[]> {
+  static groupByQuery(
+    entries: SlowQueryEntry[],
+  ): Record<string, SlowQueryEntry[]> {
     const grouped: Record<string, SlowQueryEntry[]> = {};
 
-    entries.forEach(entry => {
-      const normalizedQuery = this.normalizeQuery(entry.query);
+    entries.forEach((entry) => {
+      const normalizedQuery = SlowQueryParser.normalizeQuery(entry.query);
       if (!grouped[normalizedQuery]) {
         grouped[normalizedQuery] = [];
       }
