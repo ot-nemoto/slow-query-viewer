@@ -145,8 +145,8 @@ export default function Home() {
       .map(([normalizedQuery, queryEntries]) => {
         const times = queryEntries.map((e) => e.queryTime);
         const totalTime = times.reduce((sum, time) => sum + time, 0);
-        const maxTime = Math.max(...times);
-        const minTime = Math.min(...times);
+        const maxTime = times.reduce((max, time) => Math.max(max, time), -Infinity);
+        const minTime = times.reduce((min, time) => Math.min(min, time), Infinity);
         return {
           normalizedQuery,
           count: queryEntries.length,
