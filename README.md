@@ -97,6 +97,33 @@ src/
     └── slowQueryParser.ts
 ```
 
+## GitHub Pagesデプロイ
+
+このプロジェクトはGitHub Pagesに自動デプロイされます。
+
+### デプロイ条件
+- masterブランチへのpush時に自動的にデプロイされます
+- GitHub Actionsを使用して静的ビルドとデプロイを実行
+
+### アクセス方法
+デプロイ後は以下のURLでアクセスできます：
+```
+https://ot-nemoto.github.io/slow-query-viewer/
+```
+
+### デプロイフロー
+1. masterブランチへコードをpush
+2. GitHub Actionsが自動実行
+3. `npm run build:static`で静的ファイルを生成
+4. GitHub Pagesに自動デプロイ
+
+### ローカルでの静的ビルド確認
+```bash
+npm run build:static
+cd out
+python3 -m http.server 8080
+```
+
 ## 貢献
 
 プルリクエストやイシューは歓迎します。

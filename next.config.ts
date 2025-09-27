@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   ...(isStatic && {
     output: 'export',
     trailingSlash: true,
+    basePath: '/slow-query-viewer',
+    assetPrefix: '/slow-query-viewer',
     images: {
       unoptimized: true
     }
