@@ -68,25 +68,48 @@ export default function Home() {
     setIsLoading(true);
     try {
       const newFiles: UploadedFile[] = [];
+      const failedFiles: string[] = [];
 
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
-        const content = await file.text();
-        const entries = SlowQueryParser.parseLog(content);
+        try {
+          const content = await file.text();
+          const entries = SlowQueryParser.parseLog(content);
 
-        newFiles.push({
-          name: file.name,
-          size: file.size,
-          entries,
-        });
+          // スロークエリエントリが見つからない場合はエラー扱い
+          if (entries.length === 0) {
+            failedFiles.push(`${file.name} (スロークエリが見つかりませんでした)`);
+            continue;
+          }
+
+          newFiles.push({
+            name: file.name,
+            size: file.size,
+            entries,
+          });
+        } catch (error) {
+          console.error(`Error parsing file ${file.name}:`, error);
+          failedFiles.push(`${file.name} (ファイル読み込みエラー)`);
+        }
       }
 
-      const updatedFiles = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(updatedFiles);
+      // 失敗したファイルがある場合はメッセージを表示
+      if (failedFiles.length > 0) {
+        const message = failedFiles.length === fileList.length
+          ? `すべてのファイルの処理に失敗しました：\n${failedFiles.join('\n')}`
+          : `以下のファイルはスロークエリログとして読み込めませんでした：\n${failedFiles.join('\n')}`;
+        alert(message);
+      }
 
-      // 全ファイルのエントリを統合
-      const combinedEntries = updatedFiles.flatMap((f) => f.entries);
-      updateAnalysis(combinedEntries);
+      // 成功したファイルがある場合のみ処理を続行
+      if (newFiles.length > 0) {
+        const updatedFiles = [...uploadedFiles, ...newFiles];
+        setUploadedFiles(updatedFiles);
+
+        // 全ファイルのエントリを統合
+        const combinedEntries = updatedFiles.flatMap((f) => f.entries);
+        updateAnalysis(combinedEntries);
+      }
     } catch (error) {
       console.error("Error parsing files:", error);
       alert("ファイルの解析中にエラーが発生しました");
@@ -125,33 +148,7 @@ export default function Home() {
 
     const files = event.dataTransfer.files;
     if (files && files.length > 0) {
-      // .logまたは.txtファイルのみをフィルタリング
-      const validFiles = Array.from(files).filter(
-        (file) =>
-          file.name.toLowerCase().endsWith(".log") ||
-          file.name.toLowerCase().endsWith(".txt"),
-      );
-
-      if (validFiles.length === 0) {
-        alert(
-          "対応していないファイル形式です。.logまたは.txtファイルをアップロードしてください。",
-        );
-        return;
-      }
-
-      if (validFiles.length !== files.length) {
-        alert(
-          `${files.length}個のファイルのうち、${validFiles.length}個の有効なファイルをアップロードします。`,
-        );
-      }
-
-      // FileListを作成するため、DataTransferを使用
-      const dataTransfer = new DataTransfer();
-      for (const file of validFiles) {
-        dataTransfer.items.add(file);
-      }
-
-      await processFiles(dataTransfer.files);
+      await processFiles(files);
     }
   };
 
@@ -287,7 +284,6 @@ export default function Home() {
           >
             <input
               type="file"
-              accept=".log,.txt"
               multiple
               onChange={handleFileUpload}
               disabled={isLoading}
@@ -333,7 +329,7 @@ export default function Home() {
                   isDragOver ? "text-blue-500" : "text-gray-500"
                 }`}
               >
-                <p>📄 対応ファイル: .log, .txt</p>
+                <p>📄 対応ファイル: すべてのファイル形式</p>
                 <p>🔢 複数ファイルの同時アップロード可能</p>
                 {isDragOver && (
                   <p className="text-blue-600 font-medium mt-2 animate-pulse">
