@@ -34,6 +34,34 @@ npm run dev
 
 3. ブラウザで http://localhost:3000 にアクセス
 
+## ビルドオプション
+
+このアプリケーションは2つのモードでビルドできます：
+
+### 1. 通常のNext.jsアプリケーション（サーバー対応）
+```bash
+npm run build
+npm start
+```
+- Node.js環境で動作
+- `.next/` ディレクトリに生成
+- `next start` でサーバーを起動
+
+### 2. 静的サイト（完全クライアントサイド）
+```bash
+npm run build:static
+```
+- 静的ファイルのみで動作
+- `out/` ディレクトリに生成
+- CDN、GitHub Pages、Netlify等でホスティング可能
+- Windows、macOS、Linux対応（cross-env使用）
+
+例：静的サイトをローカルでテスト
+```bash
+cd out
+python3 -m http.server 8080
+```
+
 ## 使用方法
 
 1. MySQLのスロークエリログファイルを準備
