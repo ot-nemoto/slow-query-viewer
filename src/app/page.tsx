@@ -130,7 +130,7 @@ export default function Home() {
               </div>
               <div className="space-y-2">
                 {uploadedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div key={`${file.name}-${file.size}`} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <div className="flex-1">
                       <span className="font-medium">{file.name}</span>
                       <span className="ml-2 text-sm text-gray-500">
@@ -187,8 +187,8 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {querySummaries.slice(0, 20).map((summary, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                  {querySummaries.slice(0, 20).map((summary) => (
+                    <tr key={`${summary.normalizedQuery}-${summary.count}-${summary.totalTime}`} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-900 font-mono">
                         <div className="max-w-md truncate" title={summary.normalizedQuery}>
                           {summary.normalizedQuery.length > 100 ? summary.normalizedQuery.substring(0, 100) + '...' : summary.normalizedQuery}
