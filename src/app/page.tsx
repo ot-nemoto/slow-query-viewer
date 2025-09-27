@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId, useEffect } from "react";
 import { SlowQueryParser, type SlowQueryEntry } from "@/lib/slowQueryParser";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 import StatsSummary from "@/components/StatsSummary";
@@ -23,19 +23,35 @@ export default function Home() {
   const [querySummaries, setQuerySummaries] = useState<QuerySummary[]>([]);
   const [allEntries, setAllEntries] = useState<SlowQueryEntry[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputId = useId();
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  // ページ全体でのドラッグアンドドロップを防ぐ
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
 
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
+  const processFiles = async (fileList: FileList) => {
     setIsLoading(true);
     try {
       const newFiles: UploadedFile[] = [];
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
         const content = await file.text();
         const entries = SlowQueryParser.parseLog(content);
 
@@ -57,8 +73,61 @@ export default function Home() {
       alert("ファイルの解析中にエラーが発生しました");
     } finally {
       setIsLoading(false);
-      // ファイル入力をリセット
-      event.target.value = "";
+    }
+  };
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    await processFiles(files);
+    // ファイル入力をリセット
+    event.target.value = "";
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragOver(false);
+
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      // .logまたは.txtファイルのみをフィルタリング
+      const validFiles = Array.from(files).filter(file =>
+        file.name.toLowerCase().endsWith('.log') ||
+        file.name.toLowerCase().endsWith('.txt')
+      );
+
+      if (validFiles.length === 0) {
+        alert("対応していないファイル形式です。.logまたは.txtファイルをアップロードしてください。");
+        return;
+      }
+
+      if (validFiles.length !== files.length) {
+        alert(`${files.length}個のファイルのうち、${validFiles.length}個の有効なファイルをアップロードします。`);
+      }
+
+      // FileListを作成するため、DataTransferを使用
+      const dataTransfer = new DataTransfer();
+      for (const file of validFiles) {
+        dataTransfer.items.add(file);
+      }
+
+      await processFiles(dataTransfer.files);
     }
   };
 
@@ -115,18 +184,78 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-4">
             スロークエリログファイルをアップロード
           </h2>
-          <input
-            type="file"
-            accept=".log,.txt"
-            multiple
-            onChange={handleFileUpload}
-            disabled={isLoading}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-          <p className="mt-2 text-sm text-gray-600">
-            複数のファイルを同時に選択できます
-          </p>
-          {isLoading && <p className="mt-2 text-blue-600">解析中...</p>}
+
+          {/* ドラッグアンドドロップエリア */}
+          <label
+            htmlFor={fileInputId}
+            className={`relative block border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer ${
+              isDragOver
+                ? "border-blue-500 bg-blue-50 shadow-lg scale-[1.02]"
+                : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+            } ${isLoading ? "opacity-50 pointer-events-none" : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <input
+              type="file"
+              accept=".log,.txt"
+              multiple
+              onChange={handleFileUpload}
+              disabled={isLoading}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              id={fileInputId}
+            />
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <svg
+                  className={`w-12 h-12 ${
+                    isDragOver ? "text-blue-500" : "text-gray-400"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <title>アップロードアイコン</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className={`text-lg font-medium transition-colors ${
+                  isDragOver ? "text-blue-600" : "text-gray-900"
+                }`}>
+                  {isDragOver ? "📁 ファイルをドロップしてください" : "📁 ファイルをドラッグ＆ドロップ"}
+                </p>
+                <p className="text-gray-500 mt-1">
+                  またはクリックしてファイルを選択してください
+                </p>
+              </div>
+              <div className={`text-sm transition-colors ${
+                isDragOver ? "text-blue-500" : "text-gray-500"
+              }`}>
+                <p>📄 対応ファイル: .log, .txt</p>
+                <p>🔢 複数ファイルの同時アップロード可能</p>
+                {isDragOver && (
+                  <p className="text-blue-600 font-medium mt-2 animate-pulse">
+                    ✅ ここにドロップしてください
+                  </p>
+                )}
+              </div>
+            </div>
+          </label>
+
+          {isLoading && (
+            <div className="mt-4 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <p className="ml-2 text-blue-600">解析中...</p>
+            </div>
+          )}
 
           {uploadedFiles.length > 0 && (
             <div className="mt-6">
@@ -171,9 +300,14 @@ export default function Home() {
 
         <StatsSummary entries={allEntries} />
 
-        {allEntries.length > 0 && (
+        {uploadedFiles.length > 0 && (
           <div className="mb-8">
-            <TimeSeriesChart entries={allEntries} />
+            <TimeSeriesChart
+              fileData={uploadedFiles.map(file => ({
+                name: file.name,
+                entries: file.entries
+              }))}
+            />
           </div>
         )}
 
