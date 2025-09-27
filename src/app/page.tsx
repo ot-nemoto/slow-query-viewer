@@ -10,6 +10,8 @@ interface QuerySummary {
   count: number;
   totalTime: number;
   avgTime: number;
+  maxTime: number;
+  minTime: number;
 }
 
 interface UploadedFile {
@@ -18,12 +20,17 @@ interface UploadedFile {
   entries: SlowQueryEntry[];
 }
 
+type SortKey = 'count' | 'totalTime' | 'avgTime' | 'maxTime' | 'minTime';
+type SortDirection = 'asc' | 'desc';
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [querySummaries, setQuerySummaries] = useState<QuerySummary[]>([]);
   const [allEntries, setAllEntries] = useState<SlowQueryEntry[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('totalTime');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const fileInputId = useId();
 
   // ページ全体でのドラッグアンドドロップを防ぐ
@@ -138,17 +145,44 @@ export default function Home() {
       .map(([normalizedQuery, queryEntries]) => {
         const times = queryEntries.map((e) => e.queryTime);
         const totalTime = times.reduce((sum, time) => sum + time, 0);
+        const maxTime = Math.max(...times);
+        const minTime = Math.min(...times);
         return {
           normalizedQuery,
           count: queryEntries.length,
           totalTime,
           avgTime: totalTime / queryEntries.length,
+          maxTime,
+          minTime,
         };
-      })
-      .sort((a, b) => b.totalTime - a.totalTime);
+      });
 
-    setQuerySummaries(summaries);
+    // ソート適用
+    const sortedSummaries = sortSummaries(summaries, sortKey, sortDirection);
+    setQuerySummaries(sortedSummaries);
     setAllEntries(entries);
+  };
+
+  const sortSummaries = (summaries: QuerySummary[], key: SortKey, direction: SortDirection): QuerySummary[] => {
+    return [...summaries].sort((a, b) => {
+      const valueA = a[key];
+      const valueB = b[key];
+
+      if (direction === 'asc') {
+        return valueA - valueB;
+      } else {
+        return valueB - valueA;
+      }
+    });
+  };
+
+  const handleSort = (key: SortKey) => {
+    const newDirection = sortKey === key && sortDirection === 'desc' ? 'asc' : 'desc';
+    setSortKey(key);
+    setSortDirection(newDirection);
+
+    const sortedSummaries = sortSummaries(querySummaries, key, newDirection);
+    setQuerySummaries(sortedSummaries);
   };
 
   const removeFile = (indexToRemove: number) => {
@@ -318,7 +352,7 @@ export default function Home() {
               {uploadedFiles.length > 1
                 ? `${uploadedFiles.length}つのファイルを統合した結果を表示しています。`
                 : ""}
-              総実行時間の高い順に表示されています
+              列ヘッダーをクリックでソートできます
             </p>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -327,14 +361,70 @@ export default function Home() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       クエリ（正規化済み）
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      実行回数
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('count')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>実行回数</span>
+                        {sortKey === 'count' && (
+                          <span className="text-blue-500">
+                            {sortDirection === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      総実行時間
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('totalTime')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>総実行時間</span>
+                        {sortKey === 'totalTime' && (
+                          <span className="text-blue-500">
+                            {sortDirection === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      平均実行時間
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('avgTime')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>平均実行時間</span>
+                        {sortKey === 'avgTime' && (
+                          <span className="text-blue-500">
+                            {sortDirection === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('maxTime')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>最大実行時間</span>
+                        {sortKey === 'maxTime' && (
+                          <span className="text-blue-500">
+                            {sortDirection === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('minTime')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>最小実行時間</span>
+                        {sortKey === 'minTime' && (
+                          <span className="text-blue-500">
+                            {sortDirection === 'desc' ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -362,6 +452,16 @@ export default function Home() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {summary.avgTime.toFixed(3)}s
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className="text-red-600 font-medium">
+                          {summary.maxTime.toFixed(3)}s
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className="text-green-600">
+                          {summary.minTime.toFixed(3)}s
+                        </span>
                       </td>
                     </tr>
                   ))}
