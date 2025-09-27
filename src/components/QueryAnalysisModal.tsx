@@ -1,5 +1,16 @@
 import type { QueryAnalysis } from "@/lib/slowQueryParser";
 
+// Simple hash function for generating stable keys
+const generateStableKey = (str: string, count: number): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return `${Math.abs(hash)}-${count}`;
+};
+
 interface QueryAnalysisModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -96,7 +107,10 @@ const QueryAnalysisModal: React.FC<QueryAnalysisModalProps> = ({
                 <tbody className="bg-white divide-y divide-gray-200">
                   {analysis.parameterAnalyses.map((paramAnalysis) => (
                     <tr
-                      key={`${paramAnalysis.parameterPattern}-${paramAnalysis.count}`}
+                      key={generateStableKey(
+                        paramAnalysis.parameterPattern,
+                        paramAnalysis.count,
+                      )}
                       className="hover:bg-gray-50"
                     >
                       <td className="px-6 py-4 text-sm text-gray-900 font-mono">
