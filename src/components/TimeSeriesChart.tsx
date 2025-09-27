@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import { useState } from "react";
+import { Line } from "react-chartjs-2";
 import type { SlowQueryEntry } from "@/lib/slowQueryParser";
 
 ChartJS.register(
@@ -35,13 +35,15 @@ interface TimeSeriesChartProps {
 
 export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
   // ファイルごとの表示/非表示を管理する状態
-  const [visibleFiles, setVisibleFiles] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const file of fileData) {
-      initial[file.name] = true;
-    }
-    return initial;
-  });
+  const [visibleFiles, setVisibleFiles] = useState<Record<string, boolean>>(
+    () => {
+      const initial: Record<string, boolean> = {};
+      for (const file of fileData) {
+        initial[file.name] = true;
+      }
+      return initial;
+    },
+  );
 
   // 色のパレット（ファイル数に応じて自動で色分け）
   const colors = [
@@ -60,9 +62,9 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
   const allTimePoints = new Set<string>();
 
   // 全ファイルの時刻とデータを収集
-  fileData.forEach(file => {
+  fileData.forEach((file) => {
     const fileMap = new Map<string, number>();
-    file.entries.forEach(entry => {
+    file.entries.forEach((entry) => {
       const timeKey = entry.time;
       allTimePoints.add(timeKey);
       fileMap.set(timeKey, entry.queryTime);
@@ -72,7 +74,7 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
 
   // 時刻順にソート
   const sortedTimePoints = Array.from(allTimePoints).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
   );
 
   // データセットをファイルごとに作成（各ファイルに固定の色インデックスを使用）
@@ -86,8 +88,8 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
 
       return {
         label: file.name,
-        data: sortedTimePoints.map(timePoint =>
-          fileDataMap?.get(timePoint) ?? null
+        data: sortedTimePoints.map(
+          (timePoint) => fileDataMap?.get(timePoint) ?? null,
         ),
         borderColor: color.border,
         backgroundColor: color.bg,
@@ -97,7 +99,7 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
         spanGaps: false, // null値の部分で線を切る
       };
     })
-    .filter(dataset => dataset !== null); // null要素を除去
+    .filter((dataset) => dataset !== null); // null要素を除去
 
   const data = {
     labels: sortedTimePoints.map((timePoint) => {
@@ -113,9 +115,9 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
   };
 
   const toggleFileVisibility = (fileName: string) => {
-    setVisibleFiles(prev => ({
+    setVisibleFiles((prev) => ({
       ...prev,
-      [fileName]: !prev[fileName]
+      [fileName]: !prev[fileName],
     }));
   };
 
@@ -132,15 +134,18 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
       },
       tooltip: {
         callbacks: {
-          afterLabel: (context: { dataIndex: number; datasetIndex: number }) => {
+          afterLabel: (context: {
+            dataIndex: number;
+            datasetIndex: number;
+          }) => {
             const timePoint = sortedTimePoints[context.dataIndex];
             const fileName = datasets[context.datasetIndex]?.label;
 
             if (!fileName) return [];
 
             // 該当ファイルから該当時刻のエントリを探す
-            const file = fileData.find(f => f.name === fileName);
-            const entry = file?.entries.find(e => e.time === timePoint);
+            const file = fileData.find((f) => f.name === fileName);
+            const entry = file?.entries.find((e) => e.time === timePoint);
 
             if (!entry) return [];
 
@@ -181,7 +186,9 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
       {/* ファイル別の表示切り替えボタン */}
       {fileData.length > 1 && (
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">表示ファイル</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">
+            表示ファイル
+          </h3>
           <div className="flex flex-wrap gap-2">
             {fileData.map((file, index) => {
               const color = colors[index % colors.length];
@@ -206,9 +213,7 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
                     style={{ backgroundColor: color.border }}
                   />
                   {file.name}
-                  <span className="text-xs">
-                    ({file.entries.length})
-                  </span>
+                  <span className="text-xs">({file.entries.length})</span>
                 </button>
               );
             })}

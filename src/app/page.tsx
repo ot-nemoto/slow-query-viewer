@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useId, useEffect } from "react";
-import { SlowQueryParser, type SlowQueryEntry } from "@/lib/slowQueryParser";
-import TimeSeriesChart from "@/components/TimeSeriesChart";
+import { useEffect, useId, useState } from "react";
+import QueryAnalysisModal from "@/components/QueryAnalysisModal";
 import StatsSummary from "@/components/StatsSummary";
+import TimeSeriesChart from "@/components/TimeSeriesChart";
+import {
+  type QueryAnalysis,
+  type SlowQueryEntry,
+  SlowQueryParser,
+} from "@/lib/slowQueryParser";
 
 interface QuerySummary {
   normalizedQuery: string;
@@ -20,8 +25,8 @@ interface UploadedFile {
   entries: SlowQueryEntry[];
 }
 
-type SortKey = 'count' | 'totalTime' | 'avgTime' | 'maxTime' | 'minTime';
-type SortDirection = 'asc' | 'desc';
+type SortKey = "count" | "totalTime" | "avgTime" | "maxTime" | "minTime";
+type SortDirection = "asc" | "desc";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,8 +34,15 @@ export default function Home() {
   const [allEntries, setAllEntries] = useState<SlowQueryEntry[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [sortKey, setSortKey] = useState<SortKey>('totalTime');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortKey, setSortKey] = useState<SortKey>("totalTime");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [analysisModal, setAnalysisModal] = useState<{
+    isOpen: boolean;
+    analysis: QueryAnalysis | null;
+  }>({
+    isOpen: false,
+    analysis: null,
+  });
   const fileInputId = useId();
 
   // ページ全体でのドラッグアンドドロップを防ぐ
@@ -43,12 +55,12 @@ export default function Home() {
       e.preventDefault();
     };
 
-    document.addEventListener('dragover', handleDragOver);
-    document.addEventListener('drop', handleDrop);
+    document.addEventListener("dragover", handleDragOver);
+    document.addEventListener("drop", handleDrop);
 
     return () => {
-      document.removeEventListener('dragover', handleDragOver);
-      document.removeEventListener('drop', handleDrop);
+      document.removeEventListener("dragover", handleDragOver);
+      document.removeEventListener("drop", handleDrop);
     };
   }, []);
 
@@ -114,18 +126,23 @@ export default function Home() {
     const files = event.dataTransfer.files;
     if (files && files.length > 0) {
       // .logまたは.txtファイルのみをフィルタリング
-      const validFiles = Array.from(files).filter(file =>
-        file.name.toLowerCase().endsWith('.log') ||
-        file.name.toLowerCase().endsWith('.txt')
+      const validFiles = Array.from(files).filter(
+        (file) =>
+          file.name.toLowerCase().endsWith(".log") ||
+          file.name.toLowerCase().endsWith(".txt"),
       );
 
       if (validFiles.length === 0) {
-        alert("対応していないファイル形式です。.logまたは.txtファイルをアップロードしてください。");
+        alert(
+          "対応していないファイル形式です。.logまたは.txtファイルをアップロードしてください。",
+        );
         return;
       }
 
       if (validFiles.length !== files.length) {
-        alert(`${files.length}個のファイルのうち、${validFiles.length}個の有効なファイルをアップロードします。`);
+        alert(
+          `${files.length}個のファイルのうち、${validFiles.length}個の有効なファイルをアップロードします。`,
+        );
       }
 
       // FileListを作成するため、DataTransferを使用
@@ -141,12 +158,18 @@ export default function Home() {
   const updateAnalysis = (entries: SlowQueryEntry[]) => {
     const grouped = SlowQueryParser.groupByQuery(entries);
 
-    const summaries: QuerySummary[] = Object.entries(grouped)
-      .map(([normalizedQuery, queryEntries]) => {
+    const summaries: QuerySummary[] = Object.entries(grouped).map(
+      ([normalizedQuery, queryEntries]) => {
         const times = queryEntries.map((e) => e.queryTime);
         const totalTime = times.reduce((sum, time) => sum + time, 0);
-        const maxTime = times.reduce((max, time) => Math.max(max, time), -Infinity);
-        const minTime = times.reduce((min, time) => Math.min(min, time), Infinity);
+        const maxTime = times.reduce(
+          (max, time) => Math.max(max, time),
+          -Infinity,
+        );
+        const minTime = times.reduce(
+          (min, time) => Math.min(min, time),
+          Infinity,
+        );
         return {
           normalizedQuery,
           count: queryEntries.length,
@@ -155,7 +178,8 @@ export default function Home() {
           maxTime,
           minTime,
         };
-      });
+      },
+    );
 
     // ソート適用
     const sortedSummaries = sortSummaries(summaries, sortKey, sortDirection);
@@ -163,12 +187,16 @@ export default function Home() {
     setAllEntries(entries);
   };
 
-  const sortSummaries = (summaries: QuerySummary[], key: SortKey, direction: SortDirection): QuerySummary[] => {
+  const sortSummaries = (
+    summaries: QuerySummary[],
+    key: SortKey,
+    direction: SortDirection,
+  ): QuerySummary[] => {
     return [...summaries].sort((a, b) => {
       const valueA = a[key];
       const valueB = b[key];
 
-      if (direction === 'asc') {
+      if (direction === "asc") {
         return valueA - valueB;
       } else {
         return valueB - valueA;
@@ -177,12 +205,38 @@ export default function Home() {
   };
 
   const handleSort = (key: SortKey) => {
-    const newDirection = sortKey === key && sortDirection === 'desc' ? 'asc' : 'desc';
+    const newDirection =
+      sortKey === key && sortDirection === "desc" ? "asc" : "desc";
     setSortKey(key);
     setSortDirection(newDirection);
 
     const sortedSummaries = sortSummaries(querySummaries, key, newDirection);
     setQuerySummaries(sortedSummaries);
+  };
+
+  const handleAnalyzeQuery = (normalizedQuery: string) => {
+    // 該当するクエリのエントリを取得
+    const groupedEntries = SlowQueryParser.groupByQuery(allEntries);
+    const entries = groupedEntries[normalizedQuery] || [];
+
+    // パラメータ分析を実行
+    const analysis = SlowQueryParser.analyzeQueryParameters(
+      normalizedQuery,
+      entries,
+    );
+
+    // モーダルを表示
+    setAnalysisModal({
+      isOpen: true,
+      analysis,
+    });
+  };
+
+  const closeAnalysisModal = () => {
+    setAnalysisModal({
+      isOpen: false,
+      analysis: null,
+    });
   };
 
   const removeFile = (indexToRemove: number) => {
@@ -261,18 +315,24 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <p className={`text-lg font-medium transition-colors ${
-                  isDragOver ? "text-blue-600" : "text-gray-900"
-                }`}>
-                  {isDragOver ? "📁 ファイルをドロップしてください" : "📁 ファイルをドラッグ＆ドロップ"}
+                <p
+                  className={`text-lg font-medium transition-colors ${
+                    isDragOver ? "text-blue-600" : "text-gray-900"
+                  }`}
+                >
+                  {isDragOver
+                    ? "📁 ファイルをドロップしてください"
+                    : "📁 ファイルをドラッグ＆ドロップ"}
                 </p>
                 <p className="text-gray-500 mt-1">
                   またはクリックしてファイルを選択してください
                 </p>
               </div>
-              <div className={`text-sm transition-colors ${
-                isDragOver ? "text-blue-500" : "text-gray-500"
-              }`}>
+              <div
+                className={`text-sm transition-colors ${
+                  isDragOver ? "text-blue-500" : "text-gray-500"
+                }`}
+              >
                 <p>📄 対応ファイル: .log, .txt</p>
                 <p>🔢 複数ファイルの同時アップロード可能</p>
                 {isDragOver && (
@@ -337,9 +397,9 @@ export default function Home() {
         {uploadedFiles.length > 0 && (
           <div className="mb-8">
             <TimeSeriesChart
-              fileData={uploadedFiles.map(file => ({
+              fileData={uploadedFiles.map((file) => ({
                 name: file.name,
-                entries: file.entries
+                entries: file.entries,
               }))}
             />
           </div>
@@ -363,68 +423,71 @@ export default function Home() {
                     </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('count')}
+                      onClick={() => handleSort("count")}
                     >
                       <div className="flex items-center space-x-1">
                         <span>実行回数</span>
-                        {sortKey === 'count' && (
+                        {sortKey === "count" && (
                           <span className="text-blue-500">
-                            {sortDirection === 'desc' ? '↓' : '↑'}
+                            {sortDirection === "desc" ? "↓" : "↑"}
                           </span>
                         )}
                       </div>
                     </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('totalTime')}
+                      onClick={() => handleSort("totalTime")}
                     >
                       <div className="flex items-center space-x-1">
                         <span>総実行時間</span>
-                        {sortKey === 'totalTime' && (
+                        {sortKey === "totalTime" && (
                           <span className="text-blue-500">
-                            {sortDirection === 'desc' ? '↓' : '↑'}
+                            {sortDirection === "desc" ? "↓" : "↑"}
                           </span>
                         )}
                       </div>
                     </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('avgTime')}
+                      onClick={() => handleSort("avgTime")}
                     >
                       <div className="flex items-center space-x-1">
                         <span>平均実行時間</span>
-                        {sortKey === 'avgTime' && (
+                        {sortKey === "avgTime" && (
                           <span className="text-blue-500">
-                            {sortDirection === 'desc' ? '↓' : '↑'}
+                            {sortDirection === "desc" ? "↓" : "↑"}
                           </span>
                         )}
                       </div>
                     </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('maxTime')}
+                      onClick={() => handleSort("maxTime")}
                     >
                       <div className="flex items-center space-x-1">
                         <span>最大実行時間</span>
-                        {sortKey === 'maxTime' && (
+                        {sortKey === "maxTime" && (
                           <span className="text-blue-500">
-                            {sortDirection === 'desc' ? '↓' : '↑'}
+                            {sortDirection === "desc" ? "↓" : "↑"}
                           </span>
                         )}
                       </div>
                     </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort('minTime')}
+                      onClick={() => handleSort("minTime")}
                     >
                       <div className="flex items-center space-x-1">
                         <span>最小実行時間</span>
-                        {sortKey === 'minTime' && (
+                        {sortKey === "minTime" && (
                           <span className="text-blue-500">
-                            {sortDirection === 'desc' ? '↓' : '↑'}
+                            {sortDirection === "desc" ? "↓" : "↑"}
                           </span>
                         )}
                       </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      分析
                     </th>
                   </tr>
                 </thead>
@@ -440,7 +503,7 @@ export default function Home() {
                           title={summary.normalizedQuery}
                         >
                           {summary.normalizedQuery.length > 100
-                            ? summary.normalizedQuery.substring(0, 100) + "..."
+                            ? `${summary.normalizedQuery.substring(0, 100)}...`
                             : summary.normalizedQuery}
                         </div>
                       </td>
@@ -463,6 +526,31 @@ export default function Home() {
                           {summary.minTime.toFixed(3)}s
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <button
+                          onClick={() =>
+                            handleAnalyzeQuery(summary.normalizedQuery)
+                          }
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                          type="button"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <title>分析</title>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                          </svg>
+                          分析
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -470,6 +558,13 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* 分析モーダル */}
+        <QueryAnalysisModal
+          isOpen={analysisModal.isOpen}
+          onClose={closeAnalysisModal}
+          analysis={analysisModal.analysis}
+        />
       </div>
     </div>
   );
