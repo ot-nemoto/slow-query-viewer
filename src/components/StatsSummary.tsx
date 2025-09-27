@@ -35,7 +35,7 @@ export default function StatsSummary({ entries }: StatsSummaryProps) {
       : null;
 
   const formatTime = (seconds: number) => {
-    return seconds.toFixed(3) + "s";
+    return `${seconds.toFixed(3)}s`;
   };
 
   const formatDate = (date: Date) => {
