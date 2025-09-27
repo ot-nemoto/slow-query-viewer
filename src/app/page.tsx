@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { SlowQueryParser, SlowQueryEntry } from '@/lib/slowQueryParser';
-import TimeSeriesChart from '@/components/TimeSeriesChart';
-import StatsSummary from '@/components/StatsSummary';
+import { useState } from "react";
+import { SlowQueryParser, type SlowQueryEntry } from "@/lib/slowQueryParser";
+import TimeSeriesChart from "@/components/TimeSeriesChart";
+import StatsSummary from "@/components/StatsSummary";
 
 interface QuerySummary {
   normalizedQuery: string;
@@ -24,7 +24,9 @@ export default function Home() {
   const [allEntries, setAllEntries] = useState<SlowQueryEntry[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
@@ -40,7 +42,7 @@ export default function Home() {
         newFiles.push({
           name: file.name,
           size: file.size,
-          entries
+          entries,
         });
       }
 
@@ -48,43 +50,46 @@ export default function Home() {
       setUploadedFiles(updatedFiles);
 
       // 全ファイルのエントリを統合
-      const combinedEntries = updatedFiles.flatMap(f => f.entries);
+      const combinedEntries = updatedFiles.flatMap((f) => f.entries);
       updateAnalysis(combinedEntries);
-
     } catch (error) {
-      console.error('Error parsing files:', error);
-      alert('ファイルの解析中にエラーが発生しました');
+      console.error("Error parsing files:", error);
+      alert("ファイルの解析中にエラーが発生しました");
     } finally {
       setIsLoading(false);
       // ファイル入力をリセット
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
   const updateAnalysis = (entries: SlowQueryEntry[]) => {
     const grouped = SlowQueryParser.groupByQuery(entries);
 
-    const summaries: QuerySummary[] = Object.entries(grouped).map(([normalizedQuery, queryEntries]) => {
-      const times = queryEntries.map(e => e.queryTime);
-      const totalTime = times.reduce((sum, time) => sum + time, 0);
-      return {
-        normalizedQuery,
-        count: queryEntries.length,
-        totalTime,
-        avgTime: totalTime / queryEntries.length
-      };
-    }).sort((a, b) => b.totalTime - a.totalTime);
+    const summaries: QuerySummary[] = Object.entries(grouped)
+      .map(([normalizedQuery, queryEntries]) => {
+        const times = queryEntries.map((e) => e.queryTime);
+        const totalTime = times.reduce((sum, time) => sum + time, 0);
+        return {
+          normalizedQuery,
+          count: queryEntries.length,
+          totalTime,
+          avgTime: totalTime / queryEntries.length,
+        };
+      })
+      .sort((a, b) => b.totalTime - a.totalTime);
 
     setQuerySummaries(summaries);
     setAllEntries(entries);
   };
 
   const removeFile = (indexToRemove: number) => {
-    const updatedFiles = uploadedFiles.filter((_, index) => index !== indexToRemove);
+    const updatedFiles = uploadedFiles.filter(
+      (_, index) => index !== indexToRemove,
+    );
     setUploadedFiles(updatedFiles);
 
     // 残りのファイルで再解析
-    const combinedEntries = updatedFiles.flatMap(f => f.entries);
+    const combinedEntries = updatedFiles.flatMap((f) => f.entries);
     if (combinedEntries.length > 0) {
       updateAnalysis(combinedEntries);
     } else {
@@ -102,10 +107,14 @@ export default function Home() {
   return (
     <div className="min-h-screen p-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">MySQL スロークエリ解析ツール</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          MySQL スロークエリ解析ツール
+        </h1>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">スロークエリログファイルをアップロード</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            スロークエリログファイルをアップロード
+          </h2>
           <input
             type="file"
             accept=".log,.txt"
@@ -114,14 +123,19 @@ export default function Home() {
             disabled={isLoading}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
-          <p className="mt-2 text-sm text-gray-600">複数のファイルを同時に選択できます</p>
+          <p className="mt-2 text-sm text-gray-600">
+            複数のファイルを同時に選択できます
+          </p>
           {isLoading && <p className="mt-2 text-blue-600">解析中...</p>}
 
           {uploadedFiles.length > 0 && (
             <div className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">アップロード済みファイル ({uploadedFiles.length})</h3>
+                <h3 className="text-lg font-medium">
+                  アップロード済みファイル ({uploadedFiles.length})
+                </h3>
                 <button
+                  type="button"
                   onClick={clearAllFiles}
                   className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
                 >
@@ -130,14 +144,19 @@ export default function Home() {
               </div>
               <div className="space-y-2">
                 {uploadedFiles.map((file, index) => (
-                  <div key={`${file.name}-${file.size}`} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div
+                    key={`${file.name}-${file.size}`}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded"
+                  >
                     <div className="flex-1">
                       <span className="font-medium">{file.name}</span>
                       <span className="ml-2 text-sm text-gray-500">
-                        ({(file.size / 1024).toFixed(1)} KB, {file.entries.length} クエリ)
+                        ({(file.size / 1024).toFixed(1)} KB,{" "}
+                        {file.entries.length} クエリ)
                       </span>
                     </div>
                     <button
+                      type="button"
                       onClick={() => removeFile(index)}
                       className="ml-2 px-2 py-1 text-sm text-red-600 hover:bg-red-100 rounded"
                     >
@@ -162,10 +181,9 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
             <h2 className="text-xl font-semibold p-6 pb-0">クエリ解析結果</h2>
             <p className="px-6 text-gray-600 mb-4">
-              {uploadedFiles.length > 1 ?
-                `${uploadedFiles.length}つのファイルを統合した結果を表示しています。` :
-                ''
-              }
+              {uploadedFiles.length > 1
+                ? `${uploadedFiles.length}つのファイルを統合した結果を表示しています。`
+                : ""}
               総実行時間の高い順に表示されています
             </p>
             <div className="overflow-x-auto">
@@ -188,10 +206,18 @@ export default function Home() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {querySummaries.slice(0, 20).map((summary) => (
-                    <tr key={`${summary.normalizedQuery}-${summary.count}-${summary.totalTime}`} className="hover:bg-gray-50">
+                    <tr
+                      key={`${summary.normalizedQuery}-${summary.count}-${summary.totalTime}`}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                        <div className="max-w-md truncate" title={summary.normalizedQuery}>
-                          {summary.normalizedQuery.length > 100 ? summary.normalizedQuery.substring(0, 100) + '...' : summary.normalizedQuery}
+                        <div
+                          className="max-w-md truncate"
+                          title={summary.normalizedQuery}
+                        >
+                          {summary.normalizedQuery.length > 100
+                            ? summary.normalizedQuery.substring(0, 100) + "..."
+                            : summary.normalizedQuery}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

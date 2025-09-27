@@ -1,17 +1,17 @@
 import type { NextConfig } from "next";
 
-const isStatic = process.env.BUILD_MODE === 'static';
+const isStatic = process.env.BUILD_MODE === "static";
 
 const nextConfig: NextConfig = {
   ...(isStatic && {
-    output: 'export',
+    output: "export",
     trailingSlash: true,
-    basePath: '/slow-query-viewer',
-    assetPrefix: '/slow-query-viewer',
+    basePath: "/slow-query-viewer",
+    assetPrefix: "/slow-query-viewer",
     images: {
-      unoptimized: true
-    }
-  })
+      unoptimized: true,
+    },
+  }),
 };
 
 export default nextConfig;
