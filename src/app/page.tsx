@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import NotificationContainer from "@/components/NotificationContainer";
+import type { ErrorNotification } from "@/components/NotificationToast";
 import QueryAnalysisModal from "@/components/QueryAnalysisModal";
 import StatsSummary from "@/components/StatsSummary";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
@@ -43,7 +45,38 @@ export default function Home() {
     isOpen: false,
     analysis: null,
   });
+  const [notifications, setNotifications] = useState<ErrorNotification[]>([]);
   const fileInputId = useId();
+
+  // 通知を追加する関数
+  const addNotification = (
+    type: ErrorNotification["type"],
+    title: string,
+    message: string,
+  ) => {
+    const id = `notification-${Date.now()}-${Math.random()}`;
+    const notification: ErrorNotification = {
+      id,
+      type,
+      title,
+      message,
+      timestamp: Date.now(),
+    };
+
+    setNotifications((prev) => [...prev, notification]);
+
+    // 5秒後に自動削除
+    setTimeout(() => {
+      removeNotification(id);
+    }, 5000);
+  };
+
+  // 通知を削除する関数
+  const removeNotification = (id: string) => {
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== id),
+    );
+  };
 
   // ページ全体でのドラッグアンドドロップを防ぐ
   useEffect(() => {
@@ -68,28 +101,70 @@ export default function Home() {
     setIsLoading(true);
     try {
       const newFiles: UploadedFile[] = [];
+      const failedFiles: string[] = [];
 
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
-        const content = await file.text();
-        const entries = SlowQueryParser.parseLog(content);
+        try {
+          const content = await file.text();
+          const entries = SlowQueryParser.parseLog(content);
 
-        newFiles.push({
-          name: file.name,
-          size: file.size,
-          entries,
-        });
+          // スロークエリエントリが見つからない場合はエラー扱い
+          if (entries.length === 0) {
+            failedFiles.push(
+              `${file.name} (スロークエリが見つかりませんでした)`,
+            );
+            continue;
+          }
+
+          newFiles.push({
+            name: file.name,
+            size: file.size,
+            entries,
+          });
+        } catch (error) {
+          console.error(`Error parsing file ${file.name}:`, error);
+          failedFiles.push(`${file.name} (ファイル読み込みエラー)`);
+        }
       }
 
-      const updatedFiles = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(updatedFiles);
+      // 失敗したファイルがある場合はメッセージを表示
+      if (failedFiles.length > 0) {
+        const isAllFailed = failedFiles.length === fileList.length;
+        const title = isAllFailed
+          ? "すべてのファイルの処理に失敗しました"
+          : "一部のファイルの処理に失敗しました";
+        const message = failedFiles.join("\n");
+        addNotification(isAllFailed ? "error" : "warning", title, message);
+      }
 
-      // 全ファイルのエントリを統合
-      const combinedEntries = updatedFiles.flatMap((f) => f.entries);
-      updateAnalysis(combinedEntries);
+      // 成功したファイルがある場合のみ処理を続行
+      if (newFiles.length > 0) {
+        const updatedFiles = [...uploadedFiles, ...newFiles];
+        setUploadedFiles(updatedFiles);
+
+        // 全ファイルのエントリを統合
+        const combinedEntries = updatedFiles.flatMap((f) => f.entries);
+        updateAnalysis(combinedEntries);
+
+        // 成功メッセージを表示
+        const totalEntries = newFiles.reduce(
+          (sum, file) => sum + file.entries.length,
+          0,
+        );
+        addNotification(
+          "success",
+          "ファイル読み込み完了",
+          `${newFiles.length}個のファイルから${totalEntries}件のスロークエリを読み込みました`,
+        );
+      }
     } catch (error) {
       console.error("Error parsing files:", error);
-      alert("ファイルの解析中にエラーが発生しました");
+      addNotification(
+        "error",
+        "解析エラー",
+        "ファイルの解析中に予期しないエラーが発生しました",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -125,33 +200,7 @@ export default function Home() {
 
     const files = event.dataTransfer.files;
     if (files && files.length > 0) {
-      // .logまたは.txtファイルのみをフィルタリング
-      const validFiles = Array.from(files).filter(
-        (file) =>
-          file.name.toLowerCase().endsWith(".log") ||
-          file.name.toLowerCase().endsWith(".txt"),
-      );
-
-      if (validFiles.length === 0) {
-        alert(
-          "対応していないファイル形式です。.logまたは.txtファイルをアップロードしてください。",
-        );
-        return;
-      }
-
-      if (validFiles.length !== files.length) {
-        alert(
-          `${files.length}個のファイルのうち、${validFiles.length}個の有効なファイルをアップロードします。`,
-        );
-      }
-
-      // FileListを作成するため、DataTransferを使用
-      const dataTransfer = new DataTransfer();
-      for (const file of validFiles) {
-        dataTransfer.items.add(file);
-      }
-
-      await processFiles(dataTransfer.files);
+      await processFiles(files);
     }
   };
 
@@ -263,6 +312,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8 bg-gray-50">
+      {/* 通知システム */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           MySQL スロークエリ解析ツール
@@ -287,7 +342,6 @@ export default function Home() {
           >
             <input
               type="file"
-              accept=".log,.txt"
               multiple
               onChange={handleFileUpload}
               disabled={isLoading}
@@ -333,7 +387,7 @@ export default function Home() {
                   isDragOver ? "text-blue-500" : "text-gray-500"
                 }`}
               >
-                <p>📄 対応ファイル: .log, .txt</p>
+                <p>📄 対応ファイル: すべてのファイル形式</p>
                 <p>🔢 複数ファイルの同時アップロード可能</p>
                 {isDragOver && (
                   <p className="text-blue-600 font-medium mt-2 animate-pulse">
