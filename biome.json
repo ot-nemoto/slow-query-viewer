@@ -19,12 +19,24 @@
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off"
+      },
+      "style": {
+        "useImportType": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "warn"
       }
     }
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double"
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
     }
   },
   "assist": {
