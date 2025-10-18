@@ -1,20 +1,22 @@
 # MySQL スロークエリ解析ツール
 
-MySQLのスロークエリログファイルをアップロードして解析し、クエリのパフォーマンスを可視化するNext.jsアプリケーションです。
+[![Pages](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy.yml)
+[![Dependabot](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/dependabot/dependabot-updates/)
+[![License](https://img.shields.io/github/license/ot-nemoto/slow-query-viewer)](https://github.com/ot-nemoto/slow-query-viewer/blob/master/LICENSE)
 
-🌐 **デプロイ先**: [https://ot-nemoto.github.io/slow-query-viewer/](https://ot-nemoto.github.io/slow-query-viewer/)
+MySQLのスロークエリログファイルをアップロードして解析し、クエリのパフォーマンスを可視化するNext.jsアプリケーションです。
 
 ## クイックスタート (Try it)
 
 1. 依存関係をインストール:
-```bash
-npm install
-```
+    ```bash
+    npm install
+    ```
 
 2. 開発サーバーを起動:
-```bash
-npm run dev
-```
+    ```bash
+    npm run dev
+    ```
 
 3. ブラウザで http://localhost:3000 にアクセス
 
@@ -41,23 +43,6 @@ SELECT count(*) FROM table_name WHERE condition='value';
 ```
 
 注: サンプルのタイムスタンプにはマイクロ秒まで含まれる場合がありますが、ブラウザの JavaScript の Date オブジェクトはミリ秒単位までの精度を扱います。極めて細かい時間精度が必要な場合は、パース時に切り捨てや丸めが発生する可能性がある点にご留意ください。
-
-## ファイル構造
-
-```
-src/
-├── app/
-│   ├── favicon.ico          # アプリケーションアイコン
-│   ├── globals.css         # グローバルスタイル
-│   ├── layout.tsx          # レイアウトコンポーネント
-│   └── page.tsx            # メインページ（アップロード・解析UI）
-├── components/
-│   ├── QueryAnalysisModal.tsx  # クエリパラメータ分析モーダル
-│   ├── StatsSummary.tsx        # 統計サマリーコンポーネント
-│   └── TimeSeriesChart.tsx     # 時系列グラフコンポーネント
-└── lib/
-    └── slowQueryParser.ts      # スロークエリログパーサー
-```
 
 ## 技術スタック
 
@@ -113,7 +98,3 @@ python3 -m http.server 8080
 1. master ブランチへ push
 2. GitHub Actions が `npm run build:static` を実行
 3. `out/` の静的ファイルが GitHub Pages に公開
-
-## ライセンス
-
-MIT
