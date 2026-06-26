@@ -1,100 +1,37 @@
 # MySQL スロークエリ解析ツール
 
-[![Pages](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy.yml)
-[![Dependabot](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/dependabot/dependabot-updates/)
+[![CI](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml)
+[![Pages](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy-github-pages.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy-github-pages.yml)
 [![License](https://img.shields.io/github/license/ot-nemoto/slow-query-viewer)](https://github.com/ot-nemoto/slow-query-viewer/blob/master/LICENSE)
 
-MySQLのスロークエリログファイルをアップロードして解析し、クエリのパフォーマンスを可視化するNext.jsアプリケーションです。
-
-## クイックスタート (Try it)
-
-1. 依存関係をインストール:
-    ```bash
-    npm install
-    ```
-
-2. 開発サーバーを起動:
-    ```bash
-    npm run dev
-    ```
-
-3. ブラウザで http://localhost:3000 にアクセス
+MySQL のスロークエリログファイルをブラウザ上で解析・可視化するツールです。
 
 ## 主な機能
 
-- ファイルアップロード（複数ファイル、ドラッグ&ドロップ対応）
-- 統計サマリー（総クエリ数、総実行時間、平均・最大・最小など）
-- クエリの正規化・グルーピング・ソートによる解析表表示
-- 詳細なパラメータ別分析（モーダル表示で実行回数・平均/最大/最小時間を確認）
-- 時系列グラフ（Chart.js によるインタラクティブな表示）
-- アップロード済みファイルの一覧表示・個別削除・全削除
+- ファイルアップロード（複数ファイル、ドラッグ＆ドロップ対応）
+- 統計サマリー（総クエリ数、実行時間の各指標、最遅クエリ詳細）
+- クエリの正規化・グルーピング・ソートによる解析テーブル
+- パラメータ値別の詳細分析（モーダル表示）
+- 時系列チャート（ファイル別の表示切り替え対応）
 
-## サンプルデータ
+## ドキュメント
 
-テスト用のサンプルスロークエリログが必要な場合は、以下のような形式のファイルを作成してください：
+| ドキュメント | 内容 |
+|-------------|------|
+| [docs/product.md](docs/product.md) | プロダクト定義（目的・対象ユーザー・成功指標） |
+| [docs/requirements.md](docs/requirements.md) | 機能要件・非機能要件 |
+| [docs/architecture.md](docs/architecture.md) | 技術スタック・ディレクトリ構成・ビルドモード |
+| [docs/ui.md](docs/ui.md) | 画面一覧・コンポーネント・UI 規約 |
+| [docs/development.md](docs/development.md) | 開発・デプロイ手順 |
+| [docs/testing.md](docs/testing.md) | テスト方針・カバレッジ規約 |
+| [docs/e2e-scenarios.md](docs/e2e-scenarios.md) | E2E テストシナリオ |
+| [docs/tasks.md](docs/tasks.md) | タスク管理・フェーズ構成 |
 
-```
-# Time: 2025-09-26T03:00:29.449806Z
-# User@Host: user[user] @  [192.168.1.1]  Id: 12345
-# Query_time: 17.175956  Lock_time: 0.000004 Rows_sent: 1  Rows_examined: 49444
-use database_name;
-SET timestamp=1758855612;
-SELECT count(*) FROM table_name WHERE condition='value';
-```
-
-注: サンプルのタイムスタンプにはマイクロ秒まで含まれる場合がありますが、ブラウザの JavaScript の Date オブジェクトはミリ秒単位までの精度を扱います。極めて細かい時間精度が必要な場合は、パース時に切り捨てや丸めが発生する可能性がある点にご留意ください。
-
-## 技術スタック
-
-- フレームワーク: Next.js 15.5.4 (App Router)
-- 言語: TypeScript 5
-- UI / ライブラリ: React 19.1.0, Tailwind CSS 4
-- データ可視化: Chart.js 4.5.0 + react-chartjs-2 5.3.0
-- 開発ツール: Biome (フォーマット/リンティング), cross-env
-
-## ビルドと開発の詳細
-
-### スクリプト
-
-主要な npm スクリプトは `package.json` に定義されています（例）:
-
-- `dev`: 開発サーバーを起動（`next dev`）
-- `build`: 通常の Next.js ビルド
-- `build:static`: 静的出力を作る（`cross-env BUILD_MODE=static next build`）
-- `start`: ビルド後のサーバー起動（`next start`）
-
-### ビルドモード
-
-1) 通常の Next.js（サーバー対応）
+## クイックスタート
 
 ```bash
-npm run build
-npm start
+npm install
+npm run dev
 ```
 
-2) 静的サイト（完全クライアントサイド、GitHub Pages 等でホスティング）
-
-```bash
-npm run build:static
-```
-
-- 静的ファイルは `out/` に生成されます。
-- ローカルで確認する場合:
-
-```bash
-cd out
-python3 -m http.server 8080
-# ブラウザで http://localhost:8080 にアクセス
-```
-
-## デプロイ
-
-このプロジェクトは GitHub Pages に自動デプロイされる設定です。
-
-**アクセスURL**: [https://ot-nemoto.github.io/slow-query-viewer/](https://ot-nemoto.github.io/slow-query-viewer/)
-
-デプロイフローの概略:
-
-1. master ブランチへ push
-2. GitHub Actions が `npm run build:static` を実行
-3. `out/` の静的ファイルが GitHub Pages に公開
+詳細は [docs/development.md](docs/development.md) を参照。
