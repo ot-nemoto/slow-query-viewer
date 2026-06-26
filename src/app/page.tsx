@@ -48,7 +48,6 @@ export default function Home() {
   const [notifications, setNotifications] = useState<ErrorNotification[]>([]);
   const fileInputId = useId();
 
-  // 通知を追加する関数
   const addNotification = (
     type: ErrorNotification["type"],
     title: string,
@@ -65,20 +64,17 @@ export default function Home() {
 
     setNotifications((prev) => [...prev, notification]);
 
-    // 5秒後に自動削除
     setTimeout(() => {
       removeNotification(id);
     }, 5000);
   };
 
-  // 通知を削除する関数
   const removeNotification = (id: string) => {
     setNotifications((prev) =>
       prev.filter((notification) => notification.id !== id),
     );
   };
 
-  // ページ全体でのドラッグアンドドロップを防ぐ
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
@@ -109,7 +105,6 @@ export default function Home() {
           const content = await file.text();
           const entries = SlowQueryParser.parseLog(content);
 
-          // スロークエリエントリが見つからない場合はエラー扱い
           if (entries.length === 0) {
             failedFiles.push(
               `${file.name} (スロークエリが見つかりませんでした)`,
@@ -128,7 +123,6 @@ export default function Home() {
         }
       }
 
-      // 失敗したファイルがある場合はメッセージを表示
       if (failedFiles.length > 0) {
         const isAllFailed = failedFiles.length === fileList.length;
         const title = isAllFailed
@@ -138,16 +132,13 @@ export default function Home() {
         addNotification(isAllFailed ? "error" : "warning", title, message);
       }
 
-      // 成功したファイルがある場合のみ処理を続行
       if (newFiles.length > 0) {
         const updatedFiles = [...uploadedFiles, ...newFiles];
         setUploadedFiles(updatedFiles);
 
-        // 全ファイルのエントリを統合
         const combinedEntries = updatedFiles.flatMap((f) => f.entries);
         updateAnalysis(combinedEntries);
 
-        // 成功メッセージを表示
         const totalEntries = newFiles.reduce(
           (sum, file) => sum + file.entries.length,
           0,
@@ -177,7 +168,6 @@ export default function Home() {
     if (!files || files.length === 0) return;
 
     await processFiles(files);
-    // ファイル入力をリセット
     event.target.value = "";
   };
 
@@ -230,7 +220,6 @@ export default function Home() {
       },
     );
 
-    // ソート適用
     const sortedSummaries = sortSummaries(summaries, sortKey, sortDirection);
     setQuerySummaries(sortedSummaries);
     setAllEntries(entries);
@@ -264,17 +253,14 @@ export default function Home() {
   };
 
   const handleAnalyzeQuery = (normalizedQuery: string) => {
-    // 該当するクエリのエントリを取得
     const groupedEntries = SlowQueryParser.groupByQuery(allEntries);
     const entries = groupedEntries[normalizedQuery] || [];
 
-    // パラメータ分析を実行
     const analysis = SlowQueryParser.analyzeQueryParameters(
       normalizedQuery,
       entries,
     );
 
-    // モーダルを表示
     setAnalysisModal({
       isOpen: true,
       analysis,
@@ -294,7 +280,6 @@ export default function Home() {
     );
     setUploadedFiles(updatedFiles);
 
-    // 残りのファイルで再解析
     const combinedEntries = updatedFiles.flatMap((f) => f.entries);
     if (combinedEntries.length > 0) {
       updateAnalysis(combinedEntries);
@@ -311,30 +296,28 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
-      {/* 通知システム */}
+    <div className="min-h-screen p-8 bg-surface-warm">
       <NotificationContainer
         notifications={notifications}
         onRemove={removeNotification}
       />
 
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+      <div className="max-w-[1100px] mx-auto px-6">
+        <h1 className="text-[25px] font-bold text-text-primary mb-12">
           MySQL スロークエリ解析ツール
         </h1>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-background p-6 mb-12">
+          <h2 className="text-[25px] font-bold text-text-primary mb-4">
             スロークエリログファイルをアップロード
           </h2>
 
-          {/* ドラッグアンドドロップエリア */}
           <label
             htmlFor={fileInputId}
-            className={`relative block border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer ${
+            className={`relative block border-2 border-dashed p-8 text-center transition-all duration-200 cursor-pointer ${
               isDragOver
-                ? "border-blue-500 bg-blue-50 shadow-lg scale-[1.02]"
-                : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                ? "border-vermillion bg-surface-deep"
+                : "border-border hover:border-text-secondary hover:bg-surface-warm"
             } ${isLoading ? "opacity-50 pointer-events-none" : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -352,7 +335,7 @@ export default function Home() {
               <div className="flex justify-center">
                 <svg
                   className={`w-12 h-12 ${
-                    isDragOver ? "text-blue-500" : "text-gray-400"
+                    isDragOver ? "text-vermillion" : "text-text-secondary"
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -370,28 +353,28 @@ export default function Home() {
               </div>
               <div>
                 <p
-                  className={`text-lg font-medium transition-colors ${
-                    isDragOver ? "text-blue-600" : "text-gray-900"
+                  className={`text-[14.688px] font-bold transition-colors ${
+                    isDragOver ? "text-vermillion" : "text-text-primary"
                   }`}
                 >
                   {isDragOver
-                    ? "📁 ファイルをドロップしてください"
-                    : "📁 ファイルをドラッグ＆ドロップ"}
+                    ? "ファイルをドロップしてください"
+                    : "ファイルをドラッグ＆ドロップ"}
                 </p>
-                <p className="text-gray-500 mt-1">
+                <p className="text-text-secondary mt-1">
                   またはクリックしてファイルを選択してください
                 </p>
               </div>
               <div
                 className={`text-sm transition-colors ${
-                  isDragOver ? "text-blue-500" : "text-gray-500"
+                  isDragOver ? "text-vermillion" : "text-text-secondary"
                 }`}
               >
-                <p>📄 対応ファイル: すべてのファイル形式</p>
-                <p>🔢 複数ファイルの同時アップロード可能</p>
+                <p>対応ファイル: すべてのファイル形式</p>
+                <p>複数ファイルの同時アップロード可能</p>
                 {isDragOver && (
-                  <p className="text-blue-600 font-medium mt-2 animate-pulse">
-                    ✅ ここにドロップしてください
+                  <p className="text-vermillion font-bold mt-2 animate-pulse">
+                    ここにドロップしてください
                   </p>
                 )}
               </div>
@@ -400,21 +383,21 @@ export default function Home() {
 
           {isLoading && (
             <div className="mt-4 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <p className="ml-2 text-blue-600">解析中...</p>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vermillion"></div>
+              <p className="ml-2 text-vermillion">解析中...</p>
             </div>
           )}
 
           {uploadedFiles.length > 0 && (
             <div className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">
+                <h3 className="text-[14.688px] font-bold">
                   アップロード済みファイル ({uploadedFiles.length})
                 </h3>
                 <button
                   type="button"
                   onClick={clearAllFiles}
-                  className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                  className="px-4 py-1.5 text-sm font-bold text-vermillion border border-vermillion rounded-full hover:bg-surface-deep transition-colors"
                 >
                   全て削除
                 </button>
@@ -423,11 +406,11 @@ export default function Home() {
                 {uploadedFiles.map((file, index) => (
                   <div
                     key={`${file.name}-${file.size}`}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded"
+                    className="flex items-center justify-between p-3 bg-surface-warm"
                   >
                     <div className="flex-1">
-                      <span className="font-medium">{file.name}</span>
-                      <span className="ml-2 text-sm text-gray-500">
+                      <span className="font-bold">{file.name}</span>
+                      <span className="ml-2 text-sm text-text-secondary">
                         ({(file.size / 1024).toFixed(1)} KB,{" "}
                         {file.entries.length} クエリ)
                       </span>
@@ -435,7 +418,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="ml-2 px-2 py-1 text-sm text-red-600 hover:bg-red-100 rounded"
+                      className="ml-2 px-3 py-1 text-sm text-vermillion hover:bg-surface-deep rounded-full transition-colors"
                     >
                       削除
                     </button>
@@ -449,7 +432,7 @@ export default function Home() {
         <StatsSummary entries={allEntries} />
 
         {uploadedFiles.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-12">
             <TimeSeriesChart
               fileData={uploadedFiles.map((file) => ({
                 name: file.name,
@@ -460,98 +443,59 @@ export default function Home() {
         )}
 
         {querySummaries.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-            <h2 className="text-xl font-semibold p-6 pb-0">クエリ解析結果</h2>
-            <p className="px-6 text-gray-600 mb-4">
+          <div className="bg-background overflow-hidden mb-12">
+            <h2 className="text-[25px] font-bold p-6 pb-0 text-text-primary">
+              クエリ解析結果
+            </h2>
+            <p className="px-6 text-text-secondary mb-4">
               {uploadedFiles.length > 1
                 ? `${uploadedFiles.length}つのファイルを統合した結果を表示しています。`
                 : ""}
               列ヘッダーをクリックでソートできます
             </p>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-surface-warm">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider">
                       クエリ（正規化済み）
                     </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort("count")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>実行回数</span>
-                        {sortKey === "count" && (
-                          <span className="text-blue-500">
-                            {sortDirection === "desc" ? "↓" : "↑"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort("totalTime")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>総実行時間</span>
-                        {sortKey === "totalTime" && (
-                          <span className="text-blue-500">
-                            {sortDirection === "desc" ? "↓" : "↑"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort("avgTime")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>平均実行時間</span>
-                        {sortKey === "avgTime" && (
-                          <span className="text-blue-500">
-                            {sortDirection === "desc" ? "↓" : "↑"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort("maxTime")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>最大実行時間</span>
-                        {sortKey === "maxTime" && (
-                          <span className="text-blue-500">
-                            {sortDirection === "desc" ? "↓" : "↑"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                      onClick={() => handleSort("minTime")}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>最小実行時間</span>
-                        {sortKey === "minTime" && (
-                          <span className="text-blue-500">
-                            {sortDirection === "desc" ? "↓" : "↑"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {(
+                      [
+                        ["count", "実行回数"],
+                        ["totalTime", "総実行時間"],
+                        ["avgTime", "平均実行時間"],
+                        ["maxTime", "最大実行時間"],
+                        ["minTime", "最小実行時間"],
+                      ] as [SortKey, string][]
+                    ).map(([key, label]) => (
+                      <th
+                        key={key}
+                        className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-surface-deep select-none"
+                        onClick={() => handleSort(key)}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>{label}</span>
+                          {sortKey === key && (
+                            <span className="text-vermillion">
+                              {sortDirection === "desc" ? "↓" : "↑"}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider">
                       分析
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-background divide-y divide-border">
                   {querySummaries.slice(0, 20).map((summary) => (
                     <tr
                       key={`${summary.normalizedQuery}-${summary.count}-${summary.totalTime}`}
-                      className="hover:bg-gray-50"
+                      className="hover:bg-surface-warm"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-900 font-mono">
+                      <td className="px-6 py-4 text-sm text-text-primary font-mono">
                         <div
                           className="max-w-md truncate"
                           title={summary.normalizedQuery}
@@ -561,31 +505,32 @@ export default function Home() {
                             : summary.normalizedQuery}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                         {summary.count}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                         {summary.totalTime.toFixed(3)}s
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                         {summary.avgTime.toFixed(3)}s
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className="text-red-600 font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className="text-danger font-bold">
                           {summary.maxTime.toFixed(3)}s
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className="text-green-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className="text-success">
                           {summary.minTime.toFixed(3)}s
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
                           onClick={() =>
                             handleAnalyzeQuery(summary.normalizedQuery)
                           }
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                          className="inline-flex items-center px-4 py-1.5 text-xs font-bold rounded-full text-white bg-vermillion hover:bg-vermillion-dark transition-colors"
+                          style={{ fontFeatureSettings: '"palt" 1', letterSpacing: "0.1em" }}
                           type="button"
                         >
                           <svg
@@ -613,7 +558,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 分析モーダル */}
         <QueryAnalysisModal
           isOpen={analysisModal.isOpen}
           onClose={closeAnalysisModal}

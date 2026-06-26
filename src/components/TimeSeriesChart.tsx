@@ -34,7 +34,6 @@ interface TimeSeriesChartProps {
 }
 
 export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
-  // ファイルごとの表示/非表示を管理する状態
   const [visibleFiles, setVisibleFiles] = useState<Record<string, boolean>>(
     () => {
       const initial: Record<string, boolean> = {};
@@ -45,23 +44,18 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
     },
   );
 
-  // 色のパレット（ファイル数に応じて自動で色分け）
   const colors = [
-    { border: "rgb(59, 130, 246)", bg: "rgba(59, 130, 246, 0.1)" }, // blue
-    { border: "rgb(239, 68, 68)", bg: "rgba(239, 68, 68, 0.1)" }, // red
-    { border: "rgb(34, 197, 94)", bg: "rgba(34, 197, 94, 0.1)" }, // green
-    { border: "rgb(168, 85, 247)", bg: "rgba(168, 85, 247, 0.1)" }, // purple
-    { border: "rgb(245, 158, 11)", bg: "rgba(245, 158, 11, 0.1)" }, // amber
-    { border: "rgb(236, 72, 153)", bg: "rgba(236, 72, 153, 0.1)" }, // pink
-    { border: "rgb(20, 184, 166)", bg: "rgba(20, 184, 166, 0.1)" }, // teal
-    { border: "rgb(251, 113, 133)", bg: "rgba(251, 113, 133, 0.1)" }, // rose
+    { border: "#c73120", bg: "rgba(199, 49, 32, 0.1)" },
+    { border: "#2e7d4f", bg: "rgba(46, 125, 79, 0.1)" },
+    { border: "#d97a00", bg: "rgba(217, 122, 0, 0.1)" },
+    { border: "#666666", bg: "rgba(102, 102, 102, 0.1)" },
+    { border: "#a52819", bg: "rgba(165, 40, 25, 0.1)" },
+    { border: "#262626", bg: "rgba(38, 38, 38, 0.1)" },
   ];
 
-  // 各ファイルのデータポイントを時刻でマッピング
   const timeToDataMap = new Map<string, Map<string, number>>();
   const allTimePoints = new Set<string>();
 
-  // 全ファイルの時刻とデータを収集
   fileData.forEach((file) => {
     const fileMap = new Map<string, number>();
     file.entries.forEach((entry) => {
@@ -72,15 +66,12 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
     timeToDataMap.set(file.name, fileMap);
   });
 
-  // 時刻順にソート
   const sortedTimePoints = Array.from(allTimePoints).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime(),
   );
 
-  // データセットをファイルごとに作成（各ファイルに固定の色インデックスを使用）
   const datasets = fileData
     .map((file, originalIndex) => {
-      // ファイルが非表示の場合はスキップ
       if (!visibleFiles[file.name]) return null;
 
       const color = colors[originalIndex % colors.length];
@@ -96,10 +87,10 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
         tension: 0.1,
         pointRadius: 3,
         pointHoverRadius: 6,
-        spanGaps: false, // null値の部分で線を切る
+        spanGaps: false,
       };
     })
-    .filter((dataset) => dataset !== null); // null要素を除去
+    .filter((dataset) => dataset !== null);
 
   const data = {
     labels: sortedTimePoints.map((timePoint) => {
@@ -126,11 +117,16 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
     plugins: {
       legend: {
         position: "top" as const,
-        display: false, // 独自の凡例を作るため非表示
+        display: false,
       },
       title: {
         display: true,
         text: "スロークエリ実行時間の時系列変化",
+        font: {
+          family: '"Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
+          weight: 700 as const,
+        },
+        color: "#262626",
       },
       tooltip: {
         callbacks: {
@@ -143,7 +139,6 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
 
             if (!fileName) return [];
 
-            // 該当ファイルから該当時刻のエントリを探す
             const file = fileData.find((f) => f.name === fileName);
             const entry = file?.entries.find((e) => e.time === timePoint);
 
@@ -166,12 +161,26 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
         title: {
           display: true,
           text: "実行時間 (秒)",
+          color: "#666666",
+        },
+        ticks: {
+          color: "#666666",
+        },
+        grid: {
+          color: "#dddddd",
         },
       },
       x: {
         title: {
           display: true,
           text: "時刻",
+          color: "#666666",
+        },
+        ticks: {
+          color: "#666666",
+        },
+        grid: {
+          color: "#dddddd",
         },
       },
     },
@@ -182,11 +191,10 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      {/* ファイル別の表示切り替えボタン */}
+    <div className="bg-background p-6">
       {fileData.length > 1 && (
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
+          <h3 className="text-sm font-bold text-text-secondary mb-2">
             表示ファイル
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -199,10 +207,10 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
                   key={file.name}
                   type="button"
                   onClick={() => toggleFileVisibility(file.name)}
-                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold transition-colors border ${
                     isVisible
-                      ? "bg-gray-100 text-gray-900 border-2"
-                      : "bg-gray-50 text-gray-500 border-2 border-gray-200"
+                      ? "bg-surface-warm text-text-primary"
+                      : "bg-background text-text-secondary border-border"
                   }`}
                   style={{
                     borderColor: isVisible ? color.border : undefined,
