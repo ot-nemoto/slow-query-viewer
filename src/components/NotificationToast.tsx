@@ -96,7 +96,7 @@ export default function NotificationToast({
         <div className="ml-4 flex-shrink-0">
           <button
             type="button"
-            className="inline-flex p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-warm transition-colors"
+            className="inline-flex p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-warm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vermillion focus-visible:ring-offset-2"
             onClick={() => onRemove(notification.id)}
             aria-label="通知を閉じる"
           >
