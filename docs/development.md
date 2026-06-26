@@ -48,7 +48,7 @@ npm run dev
 | `start` | `next start` | プロダクションサーバー起動 |
 | `lint` | `biome lint src/` | リンティング |
 | `format` | `biome format src/ --write` | フォーマット |
-| `test` | `echo "No tests yet"` | テスト（未実装） |
+| `test` | `vitest run` | テスト |
 
 ## デプロイ手順
 
