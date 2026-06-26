@@ -1,8 +1,10 @@
 # MySQL スロークエリ解析ツール
 
-[![CI](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml)
-[![Pages](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy-github-pages.yml/badge.svg)](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/deploy-github-pages.yml)
-[![License](https://img.shields.io/github/license/ot-nemoto/slow-query-viewer)](https://github.com/ot-nemoto/slow-query-viewer/blob/master/LICENSE)
+![CI](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 
 MySQL のスロークエリログファイルをブラウザ上で解析・可視化するツールです。
 
