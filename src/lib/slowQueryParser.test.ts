@@ -204,6 +204,32 @@ describe("extractActualParameters", () => {
   });
 });
 
+describe("extractParameterPattern", () => {
+  it("数値を桁数で分類する", () => {
+    const result = SlowQueryParser.extractParameterPattern(
+      "SELECT * FROM users WHERE id = 42 AND org_id = 12345 AND phone = 9012345678",
+    );
+    expect(result).toContain("SMALL_NUM");
+    expect(result).toContain("MEDIUM_NUM");
+    expect(result).toContain("LARGE_NUM");
+  });
+
+  it("文字列を長さで分類する", () => {
+    const result = SlowQueryParser.extractParameterPattern(
+      "SELECT * FROM users WHERE code = 'AB' AND name = 'John Doe Smith'",
+    );
+    expect(result).toContain("'SHORT_STR'");
+    expect(result).toContain("'MEDIUM_STR'");
+  });
+
+  it("空白を正規化する", () => {
+    const result = SlowQueryParser.extractParameterPattern(
+      "SELECT  *  FROM  users",
+    );
+    expect(result).toBe("SELECT * FROM users");
+  });
+});
+
 describe("analyzeQueryParameters", () => {
   it("パラメータ値別にグルーピングして統計を算出する", () => {
     const entries = [
