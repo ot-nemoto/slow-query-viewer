@@ -43,44 +43,46 @@ export default function StatsSummary({ entries }: StatsSummaryProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">統計サマリー</h2>
+    <div className="bg-background p-6 mb-12">
+      <h2 className="text-[25px] font-bold text-text-primary mb-4">
+        統計サマリー
+      </h2>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 rounded-lg p-4">
-          <div className="text-2xl font-bold text-blue-600">
+        <div className="bg-surface-warm p-4">
+          <div className="text-2xl font-bold text-vermillion">
             {totalQueries.toLocaleString()}
           </div>
-          <div className="text-sm text-gray-600">総クエリ数</div>
+          <div className="text-sm text-text-secondary">総クエリ数</div>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4">
-          <div className="text-2xl font-bold text-green-600">
+        <div className="bg-surface-warm p-4">
+          <div className="text-2xl font-bold text-vermillion">
             {formatTime(totalTime)}
           </div>
-          <div className="text-sm text-gray-600">総実行時間</div>
+          <div className="text-sm text-text-secondary">総実行時間</div>
         </div>
 
-        <div className="bg-yellow-50 rounded-lg p-4">
-          <div className="text-2xl font-bold text-yellow-600">
+        <div className="bg-surface-warm p-4">
+          <div className="text-2xl font-bold text-warning">
             {formatTime(avgTime)}
           </div>
-          <div className="text-sm text-gray-600">平均実行時間</div>
+          <div className="text-sm text-text-secondary">平均実行時間</div>
         </div>
 
-        <div className="bg-red-50 rounded-lg p-4">
-          <div className="text-2xl font-bold text-red-600">
+        <div className="bg-surface-deep p-4">
+          <div className="text-2xl font-bold text-danger">
             {formatTime(maxTime)}
           </div>
-          <div className="text-sm text-gray-600">最大実行時間</div>
+          <div className="text-sm text-text-secondary">最大実行時間</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {timeRange && (
           <div>
-            <h3 className="font-semibold mb-2">解析期間</h3>
-            <div className="text-sm text-gray-600">
+            <h3 className="font-bold mb-2 text-text-primary">解析期間</h3>
+            <div className="text-sm text-text-secondary">
               <div>
                 <strong>開始:</strong> {formatDate(timeRange.start)}
               </div>
@@ -100,8 +102,8 @@ export default function StatsSummary({ entries }: StatsSummaryProps) {
         )}
 
         <div>
-          <h3 className="font-semibold mb-2">検索効率</h3>
-          <div className="text-sm text-gray-600">
+          <h3 className="font-bold mb-2 text-text-primary">検索効率</h3>
+          <div className="text-sm text-text-secondary">
             <div>
               <strong>平均検索行数:</strong>{" "}
               {avgRowsExamined.toFixed(0).toLocaleString()}
@@ -118,9 +120,9 @@ export default function StatsSummary({ entries }: StatsSummaryProps) {
       </div>
 
       {slowestQuery && (
-        <div className="mt-6 p-4 bg-red-50 rounded-lg">
-          <h3 className="font-semibold mb-2 text-red-800">最も遅いクエリ</h3>
-          <div className="text-sm text-gray-700 grid grid-cols-2 gap-4 mb-2">
+        <div className="mt-6 p-4 bg-surface-deep">
+          <h3 className="font-bold mb-2 text-danger">最も遅いクエリ</h3>
+          <div className="text-sm text-text-primary grid grid-cols-2 gap-4 mb-2">
             <div>
               <strong>実行時間:</strong> {formatTime(slowestQuery.queryTime)}
             </div>
@@ -138,7 +140,7 @@ export default function StatsSummary({ entries }: StatsSummaryProps) {
           </div>
           <div className="mt-2">
             <strong>クエリ:</strong>
-            <pre className="text-xs font-mono bg-white p-2 rounded mt-1 whitespace-pre-wrap max-h-24 overflow-y-auto">
+            <pre className="text-xs font-mono bg-background p-2 mt-1 whitespace-pre-wrap max-h-24 overflow-y-auto border border-border">
               {slowestQuery.query}
             </pre>
           </div>

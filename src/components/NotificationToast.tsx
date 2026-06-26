@@ -18,15 +18,21 @@ export default function NotificationToast({
   onRemove,
 }: NotificationToastProps) {
   const typeStyles = {
-    error: "bg-red-50 border-red-200 text-red-800",
-    warning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    success: "bg-green-50 border-green-200 text-green-800",
+    error: "bg-background border-danger text-danger",
+    warning: "bg-background border-warning text-text-primary",
+    success: "bg-background border-success text-text-primary",
+  };
+
+  const iconColors = {
+    error: "text-danger",
+    warning: "text-warning",
+    success: "text-success",
   };
 
   const iconsByType = {
     error: (
       <svg
-        className="w-5 h-5 text-red-400"
+        className={`w-5 h-5 ${iconColors.error}`}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -41,7 +47,7 @@ export default function NotificationToast({
     ),
     warning: (
       <svg
-        className="w-5 h-5 text-yellow-400"
+        className={`w-5 h-5 ${iconColors.warning}`}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -56,7 +62,7 @@ export default function NotificationToast({
     ),
     success: (
       <svg
-        className="w-5 h-5 text-green-400"
+        className={`w-5 h-5 ${iconColors.success}`}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -73,7 +79,8 @@ export default function NotificationToast({
 
   return (
     <div
-      className={`${typeStyles[notification.type]} border rounded-lg p-4 shadow-md transition-all duration-300 transform animate-in slide-in-from-right max-w-md`}
+      className={`${typeStyles[notification.type]} border p-4 transition-all duration-300 transform animate-in slide-in-from-right max-w-md`}
+      style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)" }}
       role="alert"
       aria-live="polite"
       aria-atomic="true"
@@ -81,15 +88,15 @@ export default function NotificationToast({
       <div className="flex items-start">
         <div className="flex-shrink-0">{iconsByType[notification.type]}</div>
         <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium">{notification.title}</h3>
-          <div className="mt-1 text-sm whitespace-pre-line">
+          <h3 className="text-sm font-bold">{notification.title}</h3>
+          <div className="mt-1 text-sm text-text-secondary whitespace-pre-line">
             {notification.message}
           </div>
         </div>
         <div className="ml-4 flex-shrink-0">
           <button
             type="button"
-            className="inline-flex rounded-md p-1.5 hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-current"
+            className="inline-flex p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-warm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vermillion focus-visible:ring-offset-2"
             onClick={() => onRemove(notification.id)}
             aria-label="通知を閉じる"
           >
