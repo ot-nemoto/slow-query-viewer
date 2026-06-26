@@ -41,8 +41,9 @@ const QueryAnalysisModal: React.FC<QueryAnalysisModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-text-secondary hover:text-text-primary transition-colors"
+            className="text-text-secondary hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vermillion focus-visible:ring-offset-2"
             type="button"
+            aria-label="モーダルを閉じる"
           >
             <svg
               className="w-6 h-6"
