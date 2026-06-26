@@ -471,17 +471,27 @@ export default function Home() {
                     ).map(([key, label]) => (
                       <th
                         key={key}
-                        className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-surface-deep select-none"
-                        onClick={() => handleSort(key)}
+                        className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider"
+                        aria-sort={
+                          sortKey === key
+                            ? sortDirection === "asc"
+                              ? "ascending"
+                              : "descending"
+                            : "none"
+                        }
                       >
-                        <div className="flex items-center space-x-1">
+                        <button
+                          type="button"
+                          className="flex items-center space-x-1 hover:bg-surface-deep select-none w-full"
+                          onClick={() => handleSort(key)}
+                        >
                           <span>{label}</span>
                           {sortKey === key && (
                             <span className="text-vermillion">
                               {sortDirection === "desc" ? "↓" : "↑"}
                             </span>
                           )}
-                        </div>
+                        </button>
                       </th>
                     ))}
                     <th className="px-6 py-3 text-left text-xs font-bold text-text-secondary uppercase tracking-wider">
