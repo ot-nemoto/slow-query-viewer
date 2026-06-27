@@ -10,7 +10,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import type { SlowQueryEntry } from "@/lib/slowQueryParser";
 
@@ -43,6 +43,20 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
       return initial;
     },
   );
+
+  useEffect(() => {
+    setVisibleFiles((prev) => {
+      const updated = { ...prev };
+      let changed = false;
+      for (const file of fileData) {
+        if (!(file.name in updated)) {
+          updated[file.name] = true;
+          changed = true;
+        }
+      }
+      return changed ? updated : prev;
+    });
+  }, [fileData]);
 
   const colors = [
     { border: "#c73120", bg: "rgba(199, 49, 32, 0.1)" },
