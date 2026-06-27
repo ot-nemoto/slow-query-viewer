@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary（ブランドカラー） */
+  --color-vermillion: #c73120;
+  --color-vermillion-dark: #a52819;
+
+  /* Semantic */
+  --color-danger: #c73120;
+  --color-warning: #d97a00;
+  --color-success: #2e7d4f;
+
+  /* Neutral */
+  --color-text-primary: #262626;
+  --color-text-secondary: #666666;
+  --color-border: #dddddd;
+
+  /* Surface */
+  --color-background: #ffffff;
+  --color-surface-warm: #fbf9f7;
+  --color-surface-footer: #faf7f4;
+  --color-surface-deep: #f7f2ed;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-vermillion: var(--color-vermillion);
+  --color-vermillion-dark: var(--color-vermillion-dark);
+  --color-danger: var(--color-danger);
+  --color-warning: var(--color-warning);
+  --color-success: var(--color-success);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
+  --color-background: var(--color-background);
+  --color-surface-warm: var(--color-surface-warm);
+  --color-surface-footer: var(--color-surface-footer);
+  --color-surface-deep: var(--color-surface-deep);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family:
+    "Helvetica Neue", Arial,
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    Meiryo, sans-serif;
+  font-size: 12.96px;
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-break: strict;
+}
+
+h1, h2, h3 {
+  font-feature-settings: "palt" 1;
+  letter-spacing: 0.15em;
+  line-height: 1.5;
 }
