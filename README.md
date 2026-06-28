@@ -1,7 +1,7 @@
 # MySQL スロークエリ解析ツール
 
 ![CI](https://github.com/ot-nemoto/slow-query-viewer/actions/workflows/ci.yml/badge.svg)
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/github/package-json/v/ot-nemoto/slow-query-viewer)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
