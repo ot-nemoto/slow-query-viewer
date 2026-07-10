@@ -23,32 +23,7 @@ npm run dev
 
 ### Dev Container
 
-`.devcontainer/devcontainer.json` で設定済み。
-
-- イメージ: `mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie`
-- 拡張機能: Biome
-- Feature: Claude Code, GitHub CLI
-- 初期化コマンド: `npm install`
-
-## 環境変数
-
-| 変数名 | 値 | 用途 |
-|--------|---|------|
-| `BUILD_MODE` | `static` | GitHub Pages 向け静的ビルド時に設定 |
-
-`.env` ファイルは不要。
-
-## npm スクリプト
-
-| スクリプト | コマンド | 用途 |
-|-----------|---------|------|
-| `dev` | `next dev` | 開発サーバー |
-| `build` | `next build` | プロダクションビルド |
-| `build:static` | `cross-env BUILD_MODE=static next build` | 静的ビルド |
-| `start` | `next start` | プロダクションサーバー起動 |
-| `lint` | `biome lint src/` | リンティング |
-| `format` | `biome format src/ --write` | フォーマット |
-| `test` | `vitest run` | テスト |
+`.devcontainer/devcontainer.json` で設定済み。VS Code の「Reopen in Container」で起動する。
 
 ## デプロイ手順
 
