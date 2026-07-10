@@ -146,16 +146,6 @@ graph TD
 - ページ背景: Surface Warm (`#fbf9f7`)
 - 通知: 画面右上に固定表示
 
-## コンポーネント一覧
-
-| コンポーネント | Props | 役割 |
-|---------------|-------|------|
-| `StatsSummary` | `entries: SlowQueryEntry[]` | 統計カード・期間・最遅クエリ表示 |
-| `TimeSeriesChart` | `fileData: { name, entries }[]` | 時系列折れ線グラフ |
-| `QueryAnalysisModal` | `isOpen, onClose, analysis` | パラメータ分析モーダル |
-| `NotificationContainer` | `notifications[], onRemove` | 通知コンテナ |
-| `NotificationToast` | `notification, onRemove` | 個別トースト通知 |
-
 ## UI 規約
 
 - デザインシステム: aeru DESIGN.md 準拠

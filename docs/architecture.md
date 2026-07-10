@@ -2,49 +2,23 @@
 
 ## 技術スタック
 
-| カテゴリ | 技術 | バージョン |
-|----------|------|-----------|
-| フレームワーク | Next.js (App Router) | 15.5.4 |
-| 言語 | TypeScript | 5 |
-| UI ライブラリ | React | 19.1.0 |
-| スタイリング | Tailwind CSS | 4 |
-| データ可視化 | Chart.js | 4.5.0 |
-| Chart.js バインディング | react-chartjs-2 | 5.3.0 |
-| リンター/フォーマッタ | Biome | 2.2.4 |
-| 環境変数ユーティリティ | cross-env | 10.0.0 |
+技術スタックのバージョンは `package.json` を参照。
 
-## ディレクトリ構成
+| カテゴリ | 技術 |
+|----------|------|
+| フレームワーク | Next.js (App Router) |
+| 言語 | TypeScript |
+| UI ライブラリ | React |
+| スタイリング | Tailwind CSS |
+| データ可視化 | Chart.js + react-chartjs-2 |
+| リンター/フォーマッタ | Biome |
+| テストフレームワーク | Vitest |
 
-```
-slow-query-viewer/
-├── .devcontainer/          # Dev Container 設定
-├── .github/
-│   ├── dependabot.yml
-│   └── workflows/          # CI/CD ワークフロー
-├── docs/                   # プロジェクトドキュメント
-├── public/
-│   └── .nojekyll           # GitHub Pages 用
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx      # ルートレイアウト
-│   │   ├── page.tsx        # メインページ（クライアントコンポーネント）
-│   │   ├── globals.css     # グローバルスタイル（Tailwind）
-│   │   └── favicon.ico
-│   ├── components/
-│   │   ├── StatsSummary.tsx            # 統計サマリー
-│   │   ├── TimeSeriesChart.tsx         # 時系列チャート
-│   │   ├── QueryAnalysisModal.tsx      # パラメータ分析モーダル
-│   │   ├── NotificationContainer.tsx   # 通知コンテナ
-│   │   └── NotificationToast.tsx       # トースト通知
-│   └── lib/
-│       └── slowQueryParser.ts          # ログ解析・正規化ロジック
-├── CLAUDE.md
-├── package.json
-├── tsconfig.json
-├── biome.json
-├── next.config.ts
-└── postcss.config.mjs
-```
+## 非機能要件
+
+- **デプロイ**: GitHub Pages への静的デプロイ（サーバー不要）
+- **処理方式**: すべての解析はクライアントサイド（ブラウザ内）で完結する
+- **レスポンシブ**: モバイル・デスクトップ対応
 
 ## 環境変数
 
