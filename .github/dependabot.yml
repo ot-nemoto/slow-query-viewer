@@ -6,6 +6,13 @@ updates:
       interval: weekly
       day: monday
     target-branch: develop
+    ignore:
+      # typescript@7 は tsgo（Go 実装）でパッケージ構成が変わり、
+      # Next.js の next build が typescript を解決できずデプロイが落ちるため
+      # メジャー更新は除外する（Issue #39）
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
     groups:
       production-dependencies:
         dependency-type: production
