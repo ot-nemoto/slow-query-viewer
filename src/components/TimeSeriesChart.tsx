@@ -137,7 +137,8 @@ export default function TimeSeriesChart({ fileData }: TimeSeriesChartProps) {
         display: true,
         text: "スロークエリ実行時間の時系列変化",
         font: {
-          family: '"Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
+          family:
+            '"Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
           weight: 700 as const,
         },
         color: "#262626",

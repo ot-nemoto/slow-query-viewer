@@ -540,7 +540,10 @@ export default function Home() {
                             handleAnalyzeQuery(summary.normalizedQuery)
                           }
                           className="inline-flex items-center px-4 py-1.5 text-xs font-bold rounded-full text-white bg-vermillion hover:bg-vermillion-dark transition-colors"
-                          style={{ fontFeatureSettings: '"palt" 1', letterSpacing: "0.1em" }}
+                          style={{
+                            fontFeatureSettings: '"palt" 1',
+                            letterSpacing: "0.1em",
+                          }}
                           type="button"
                         >
                           <svg
