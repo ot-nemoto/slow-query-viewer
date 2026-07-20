@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SlowQueryParser } from "./slowQueryParser";
 import type { SlowQueryEntry } from "./slowQueryParser";
+import { SlowQueryParser } from "./slowQueryParser";
 
 const SAMPLE_LOG = `# Time: 2024-01-15T10:30:00.000000Z
 # User@Host: appuser[appuser] @ [10.0.0.1]  Id: 12345
@@ -124,9 +124,9 @@ SELECT 1;`;
 
 describe("normalizeQuery", () => {
   it("数値をプレースホルダに置換する", () => {
-    expect(SlowQueryParser.normalizeQuery("SELECT * FROM users WHERE id = 123")).toBe(
-      "SELECT * FROM users WHERE id = ?",
-    );
+    expect(
+      SlowQueryParser.normalizeQuery("SELECT * FROM users WHERE id = 123"),
+    ).toBe("SELECT * FROM users WHERE id = ?");
   });
 
   it("文字列リテラルをプレースホルダに置換する", () => {
@@ -142,16 +142,18 @@ describe("normalizeQuery", () => {
   });
 
   it("複数の空白を1つに正規化する", () => {
-    expect(
-      SlowQueryParser.normalizeQuery("SELECT  *   FROM    users"),
-    ).toBe("SELECT * FROM users");
+    expect(SlowQueryParser.normalizeQuery("SELECT  *   FROM    users")).toBe(
+      "SELECT * FROM users",
+    );
   });
 
   it("数値と文字列の両方を含むクエリを正規化する", () => {
     const result = SlowQueryParser.normalizeQuery(
       "SELECT * FROM orders WHERE user_id = 42 AND status = 'active'",
     );
-    expect(result).toBe("SELECT * FROM orders WHERE user_id = ? AND status = '?'");
+    expect(result).toBe(
+      "SELECT * FROM orders WHERE user_id = ? AND status = '?'",
+    );
   });
 });
 
@@ -192,7 +194,9 @@ describe("groupByQuery", () => {
 describe("extractActualParameters", () => {
   it("空白を正規化しつつパラメータ値を保持する", () => {
     expect(
-      SlowQueryParser.extractActualParameters("SELECT  *  FROM  users  WHERE  id = 123"),
+      SlowQueryParser.extractActualParameters(
+        "SELECT  *  FROM  users  WHERE  id = 123",
+      ),
     ).toBe("SELECT * FROM users WHERE id = 123");
   });
 
