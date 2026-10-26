@@ -14,7 +14,10 @@
       "!**/out",
       "!**/coverage",
       "!**/dist",
-      "!**/public"
+      "!**/public",
+      "!**/*.md",
+      "!**/*.yml",
+      "!**/*.yaml"
     ]
   },
   "formatter": {
